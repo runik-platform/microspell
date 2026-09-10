@@ -1,0 +1,51 @@
+{{/*Runik Platform
+Copyright (C) 2023 namenmalkv@gmail.com
+SPDX-License-Identifier: AGPL-3.0-only
+https://github.com/runik-platform/summon.git/templates/summon.yaml
+ */}}
+{{- $root := . }}{{/* esto seria remplazable por $ pero para lectura de codigo */}} 
+
+
+{{/* default app style */}} 
+{{- if .Values.workload.enabled  -}}
+{{- include ( printf "summon.workload.%s" .Values.workload.type ) . }}
+{{- end -}}
+
+{{- range $name, $content := .Values.configMaps }}
+  {{- if eq $content.location "create" }}
+  {{- $glyph := dict "name" $name "definition" $content  }}
+    {{- include "summon.configMap" (list $root $glyph )  }}
+  {{- end -}}
+{{- end -}}
+
+{{- range $name, $content := .Values.secrets }}
+  {{- if eq $content.location "create" }}
+  {{- $glyph := dict "name" $name "definition" $content  }}
+    {{- include "summon.secrets" (list $root $glyph )  }}
+  {{- end -}}
+{{- end -}}
+
+{{- if .Values.serviceAccount.enabled -}}
+{{- include "summon.serviceAccount" . }}
+{{- end -}}
+
+{{- if .Values.autoscaling.enabled -}}
+{{- include "summon.autoscaling" . }}
+{{- end -}}
+
+{{- if and .Values.service.enabled (or (eq .Values.workload.type "deployment") (eq .Values.workload.type "statefulset") (eq .Values.workload.type "daemonset")) }}
+{{- include "summon.service" (list . .Values.service nil) }}
+{{- end }}
+
+{{- if .Values.volumes }}
+  {{- range $name, $volume := .Values.volumes }}
+    {{- if eq $volume.type "pvc" }}
+      {{- if and $volume.pv (not $volume.stateClaimTemplate) }}
+        {{- include "summon.pv" (list $ $name $volume nil) }}
+      {{- end }}
+      {{- if not $volume.stateClaimTemplate }}
+        {{- include "summon.persistentVolumeClaim" (list $ $name $volume nil) }}
+      {{- end }}
+    {{- end }}
+  {{- end }}
+{{- end }}
