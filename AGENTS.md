@@ -1,6 +1,6 @@
-# CLAUDE.md — microspell
+# AGENTS.md — microspell
 
-Shared concepts live in the [root CLAUDE.md](../../../CLAUDE.md) and [docs/vocabulary.md](../../../docs/vocabulary.md). This file only covers what is specific to the microspell trinket.
+Shared concepts live in the [root AGENTS.md](../../../AGENTS.md) and [docs/vocabulary.md](../../../docs/vocabulary.md). This file only covers what is specific to the microspell trinket.
 
 ## 1. Role
 
@@ -27,7 +27,9 @@ Every spell in that scope without `chart:` or `path:` uses microspell as the pri
 
 `charts/trinkets/microspell/charts/` is a git submodule of `glyphs.git`, aligned with the other consumers (kaster, summon, covenant, tarot) — all tracking the same canonical repository on branch `upstream`. Microspell consumes glyph templates by name: `summon.workload.*`, `summon.service`, `summon.configMap`, `istio.virtualService`, `vault.prolicy`, `postgresql.cluster`, and so on.
 
-Edit rule: edit only in the canonical path `charts/glyphs/`; bump the submodule reference in every consumer afterwards.
+Edit rule: edit only in the canonical Glyphs repository. After its reviewed PR
+is merged, Tarot propagates the exact commit through every consumer and then
+Runik. Manual submodule bumps are recovery-only.
 
 ## 4. What microspell renders
 
@@ -88,8 +90,22 @@ make test     book <name>
 
 ## 9. Related docs
 
-- [Root CLAUDE.md](../../../CLAUDE.md) — framework-wide concepts.
+- [Root AGENTS.md](../../../AGENTS.md) — framework-wide concepts.
 - [docs/vocabulary.md](../../../docs/vocabulary.md) — glossary.
-- [librarian/CLAUDE.md](../../../librarian/CLAUDE.md) — what reaches microspell.
-- [charts/summon/CLAUDE.md](../../summon/CLAUDE.md) — the templates microspell reuses.
+- [librarian/AGENTS.md](../../../librarian/AGENTS.md) — what reaches microspell.
+- [charts/summon/AGENTS.md](../../summon/AGENTS.md) — the templates microspell reuses.
 - [docs/usage/trinkets.md](../../../docs/usage/trinkets.md) — Microspell spell-author reference.
+
+## Development and publication
+
+Forgejo `runik/microspell` is the source of truth. Develop from
+`origin/upstream`, push a topic branch to Forgejo, and merge a reviewed PR into
+`upstream`; never develop on or push directly to the generated GitHub repo.
+Every upstream merge automatically triggers Runik component synchronization.
+
+For a release, first merge the intended version in `Chart.yaml`, then publish a
+Forgejo Release at the current `upstream` head with the exact tag
+`v<Chart.yaml.version>`. A raw tag push does not publish. Tarot creates a clean
+GitHub snapshot with the public Glyphs dependency, and GitHub Actions creates
+the Release plus the self-contained OCI chart at
+`oci://ghcr.io/runik-platform/microspell`.
