@@ -28,7 +28,7 @@ Every spell in that scope without `chart:` or `path:` uses microspell as the pri
 `charts/trinkets/microspell/charts/` is a git submodule of `glyphs.git`, aligned with the other consumers (kaster, summon, covenant, tarot) — all tracking the same canonical repository on branch `upstream`. Microspell consumes glyph templates by name: `summon.workload.*`, `summon.service`, `summon.configMap`, `istio.virtualService`, `vault.prolicy`, `postgresql.cluster`, and so on.
 
 Edit rule: edit only in the canonical Glyphs repository. After its reviewed PR
-is merged, Tarot propagates the exact commit through every consumer and then
+is merged, The Glyphs repository Workflow propagates the exact commit through every consumer and then
 Runik. Manual submodule bumps are recovery-only.
 
 ## 4. What microspell renders
@@ -41,7 +41,7 @@ Runik. Manual submodule bumps are recovery-only.
 | `summon.configMap` | for `configMaps` entries with `location: create` |
 | `summon.secrets` | for `secrets` entries with `location: create` |
 | `summon.serviceAccount` | `serviceAccount.enabled` |
-| `summon.autoscaling` | `autoscaling.enabled` |
+| `summon.autoscaling` | `autoscaling.enabled`; validates mode and emits HPA only for `hpa` |
 | `summon.service` | `service.enabled` and workload is deployment / statefulset / daemonset |
 | `summon.pv`, `summon.persistentVolumeClaim` | pvc-type entries in `volumes` |
 
@@ -64,7 +64,7 @@ Runik. Manual submodule bumps are recovery-only.
 - `infrastructure.prolicy` for auto-created Vault policies.
 - `dataStore.psql` for managed PostgreSQL integration; selector-based external integration is not implemented yet.
 - `workload.replicas` default is 2 (summon defaults to 1).
-- `autoscaling` is disabled by default; when enabled its defaults are 2–10 replicas with a 70% CPU target.
+- `autoscaling` is disabled by default; `mode` defaults to `hpa` with 2–10 replicas and a 70% CPU target. `external` omits workload replicas and creates no autoscaler resources; configure the controller separately.
 
 ## 6. Relationship to summon's internal dispatcher
 
@@ -105,7 +105,7 @@ Every upstream merge automatically triggers Runik component synchronization.
 
 For a release, first merge the intended version in `Chart.yaml`, then publish a
 Forgejo Release at the current `upstream` head with the exact tag
-`v<Chart.yaml.version>`. A raw tag push does not publish. Tarot creates a clean
+`v<Chart.yaml.version>`. A raw tag push does not publish. The repository publication Workflow creates a clean
 GitHub snapshot with the public Glyphs dependency, and GitHub Actions creates
 the Release plus the self-contained OCI chart at
 `oci://ghcr.io/runik-platform/microspell`.

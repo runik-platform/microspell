@@ -254,7 +254,7 @@ service:
 workload:
   enabled: true
   type: deployment  # deployment, statefulset, job, cronjob, daemonset
-  replicas: 2
+  replicas: 2  # Used when autoscaling is disabled; explicit 0 is preserved
 
   # Security context for the primary container
   securityContext: {}
@@ -338,9 +338,11 @@ probes: {}
 #   failureThreshold: 30
 #   periodSeconds: 10
 
-# Autoscaling
+# Autoscaling: enabled omits workload spec.replicas; disabled uses workload.replicas
 autoscaling:
-  enabled: false
+  enabled: false  # Hand replica ownership to an autoscaler
+  mode: hpa  # Optional: hpa (default) or external; ignored when disabled
+  # external creates no autoscaler resources; configure the controller separately
   minReplicas: 2
   maxReplicas: 10
   targetCPUUtilizationPercentage: 70
